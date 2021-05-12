@@ -1,0 +1,133 @@
+---
+title: "Mount Allison Grading"
+author: "Douglas A. Campbell"
+date: "`r format(Sys.Date())`"
+output:
+  html_document:
+    code_folding: hide
+    df_print: paged
+---
+# Mount Allison Grading Policies are an Incoherent, Inconsistent, Unjust Mess.
+We are in a hole; Stop Digging.
+```{r load libraries, message = FALSE}
+library(tidyverse)
+```
+
+Grade Scheme Interconversions
+```{r grading dataframe}
+MtAGrades <- tibble(Percent = c(1:100)) %>%
+  mutate(
+    Letters = as.factor(case_when(Percent < 50 ~ "F",
+                        Percent >= 50 & Percent < 53 ~ "D-",
+                        Percent >= 53 & Percent < 57 ~ "D",
+                        Percent >= 57 & Percent < 60 ~ "D+",
+                        Percent >= 60 & Percent < 63 ~ "C-",
+                        Percent >= 63 & Percent < 67 ~ "C",
+                        Percent >= 67 & Percent < 70 ~ "C+",
+                        Percent >= 70 & Percent < 73 ~ "B-",
+                        Percent >= 73 & Percent < 77 ~ "B",
+                        Percent >= 77 & Percent < 80 ~ "B+",
+                        Percent >= 80 & Percent < 85 ~ "A-",
+                        Percent >= 85 & Percent < 90 ~ "A",
+                        Percent >= 90 ~ "A+")),
+    Words = as.factor(case_when(Letters == "F" ~ "Failure",
+                    Letters == "D-" ~ "Conditional non-continuing Pass",
+                    Letters == "D" ~ "Conditional non-continuing Pass",
+                    Letters == "D+" ~ "Conditional non-continuing Pass",
+                    Letters == "C-" ~ "Satisfactory",
+                    Letters == "C" ~ "Satisfactory",
+                    Letters == "C+" ~ "Satisfactory",
+                    Letters == "B-" ~ "Good",
+                    Letters == "B" ~ "Good",
+                    Letters == "B+" ~ "Good",
+                    Letters == "A-" ~ "Very Good",
+                    Letters == "A" ~ "Excellent",
+                    Letters == "A+" ~ "Outstanding")),
+    Credit = as.factor(case_when(Letters == "F" ~ "Failure",
+                    Letters == "D-" ~ "Conditional non-continuing Pass",
+                    Letters == "D" ~ "Conditional non-continuing Pass",
+                    Letters == "D+" ~ "Conditional non-continuing Pass",
+                    Letters == "C-" ~ "Pass",
+                    Letters == "C" ~ "Pass",
+                    Letters == "C+" ~ "Pass",
+                    Letters == "B-" ~ "Pass",
+                    Letters == "B" ~ "Pass",
+                    Letters == "B+" ~ "Pass",
+                    Letters == "A-" ~ "Pass",
+                    Letters == "A" ~ "Pass",
+                    Letters == "A+" ~ "Pass")),
+    GPA = case_when(Letters == "F" ~ 0,
+                    Letters == "D-" ~ 0.7,
+                    Letters == "D" ~ 1,
+                    Letters == "D+" ~ 1.3,
+                    Letters == "C-" ~ 1.7,
+                    Letters == "C" ~2.0,
+                    Letters == "C+" ~ 2.3,
+                    Letters == "B-" ~ 2.7,
+                    Letters == "B" ~ 3,
+                    Letters == "B+" ~ 3.3,
+                    Letters == "A-" ~ 3.7,
+                    Letters == "A" ~ 4,
+                    Letters == "A+" ~ 4.3),
+    Scholarships = as.factor(case_when(GPA >= 3.65 ~ "Win",
+                             GPA < 3.65 ~ "Lose")),
+    Honours = as.factor(case_when(GPA >= 2.95 ~ "Honours",
+                        GPA < 2.95 ~ "Not Honours")),
+    Credit = factor(Credit, levels = c("Failure", "Conditional non-continuing Pass", "Pass")),
+    Letters = factor(Letters, levels = c("F", "D-", "D", "D+", "C-", "C", "C+", "B-", "B", "B+", "A-", "A", "A+")), 
+    Words = factor(Words, levels = c("Failure", "Conditional non-continuing Pass", "Pass", "Satisfactory","Good", "Very Good", "Excellent", "Outstanding"))
+    )
+
+
+head(MtAGrades)
+```
+
+GPA vs. Percent
+```{r gpa vs percent chart}
+MtAGradesPlot <- MtAGrades %>% ggplot() +
+  geom_point(aes(y = Letters, x = Percent, colour = Words, shape = Credit), size = 2) + 
+  theme_bw()
+
+MtAGradesPlot
+
+ggsave(filename = "MtAGradesPlot.png", plot = MtAGradesPlot)
+
+MtALettersPlot <- MtAGrades %>% ggplot() +
+  geom_point(aes(y = GPA, x = Letters, colour = Words, shape = Credit), size = 2) + 
+  theme_bw()
+
+MtALettersPlot
+
+MtALettersWordsPlot <- MtAGrades %>% ggplot() +
+  geom_point(aes(y = Words, x = Letters, colour = Credit), size = 2) + 
+  theme_bw()
+
+MtALettersWordsPlot
+
+```
+
+```{r letters histogram}
+MtALettersHistogram <- MtAGrades %>% ggplot() +
+  geom_histogram(aes(x = Letters, fill = Words), stat = "count") + 
+  theme_bw()
+
+MtALettersHistogram
+
+ggsave(filename = "MtALettersHistogram.png", plot = MtALettersHistogram)
+```
+
+
+```{r letters stacked bar}
+MtAWordsHistogram <- MtAGrades %>% ggplot() +
+  geom_histogram(aes(x = Credit, fill = Letters), stat = "count") + 
+  theme_bw()
+
+MtAWordsHistogram
+
+MtALettersHistogram <- MtAGrades %>% ggplot() +
+  geom_histogram(aes(x = Credit, fill = Letters), stat = "count") + 
+  theme_bw()
+
+MtALettersHistogram
+
+```
